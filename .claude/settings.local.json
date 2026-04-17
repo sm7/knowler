@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rustc --version)",
+      "Bash(cargo --version)",
+      "Bash(npm --version)",
+      "Bash(brew --version)",
+      "Bash(pip3 --version)",
+      "Bash(uv --version)",
+      "Read(//usr/local/bin/**)",
+      "Bash(echo \"PATH=$PATH\")"
+    ]
+  }
+}

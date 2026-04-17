@@ -1,0 +1,10 @@
+{
+  "name": "knowler-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "cd app && npm run dev",
+    "test:engine": "cd engine && python -m pytest tests/ -v",
+    "lint:engine": "cd engine && python -m ruff check knowler_engine/",
+    "typecheck:engine": "cd engine && python -m mypy knowler_engine/"
+  }
+}

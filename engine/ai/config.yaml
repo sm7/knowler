@@ -1,0 +1,7 @@
+default_model_tier: balanced
+id: proj_01KNBKP0ZSPTW9D0KHE3MHYYNW
+name: AI and ML
+privacy_mode: local_first
+slug: ai-and-ml
+trusted_domains: []
+version: 1
