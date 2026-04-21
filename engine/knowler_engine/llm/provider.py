@@ -127,7 +127,7 @@ class LLMProvider:
         self,
         system_prompt: str,
         user_message: str,
-        tier: ModelTier = "balanced",
+        tier: str = "balanced",
         max_tokens: int = 2000,
         response_format: Literal["text", "json"] = "json",
     ) -> LLMResponse:
@@ -136,13 +136,20 @@ class LLMProvider:
 
         Raises LLMError on provider failures.
         """
+        _valid_tiers: tuple[ModelTier, ...] = ("fast", "balanced", "best")
+        if tier not in _valid_tiers:
+            raise LLMError(
+                f"Invalid model tier '{tier}'. Must be one of: {', '.join(_valid_tiers)}."
+            )
+        validated_tier: ModelTier = tier  # type: ignore[assignment]
+
         if not self._api_key:
             raise LLMError(
                 f"No API key configured for provider '{self._provider}'. "
                 "Set it in Settings or via the KNOWLER_LLM_API_KEY environment variable."
             )
 
-        model = self.model_for(tier)
+        model = self.model_for(validated_tier)
 
         if self._provider == "anthropic":
             return await self._call_anthropic(

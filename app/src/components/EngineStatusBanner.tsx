@@ -10,6 +10,8 @@ export function EngineStatusBanner({ status, error }: Props) {
 
   return (
     <div
+      role={status === "error" ? "alert" : "status"}
+      aria-live={status === "error" ? "assertive" : "polite"}
       style={{
         padding: "8px 16px",
         fontSize: 12,
@@ -24,11 +26,11 @@ export function EngineStatusBanner({ status, error }: Props) {
     >
       {status === "starting" ? (
         <>
-          <span>⏳</span> Starting knowledge engine…
+          <span aria-hidden="true">⏳</span> Starting knowledge engine…
         </>
       ) : (
         <>
-          <span>⚠</span> Engine error: {error || "Unknown error"}. Try restarting the app.
+          <span aria-hidden="true">⚠</span> Engine error: {error || "Unknown error"}. Try restarting the app.
         </>
       )}
     </div>

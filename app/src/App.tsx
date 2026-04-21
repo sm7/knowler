@@ -1,5 +1,37 @@
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useState, Component, type ReactElement, type ReactNode, type ErrorInfo } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Unhandled component error", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+          <h2 style={{ color: "var(--color-danger)" }}>Something went wrong</h2>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
+            {this.state.error.message}
+          </p>
+          <button className="btn" onClick={() => this.setState({ error: null })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { Sidebar } from "./components/Sidebar";
 import { JobStatusPanel } from "./components/JobStatusPanel";
 import { ProjectsScreen } from "./screens/ProjectsScreen";
@@ -130,6 +162,7 @@ export default function App() {
       <main className="app-main">
         <EngineStatusBanner status={engineStatus} error={engineError} />
         <div className="app-content">
+          <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Navigate to="/projects" replace />} />
             <Route
@@ -214,6 +247,7 @@ export default function App() {
             />
             <Route path="/settings" element={<SettingsScreen />} />
           </Routes>
+          </ErrorBoundary>
         </div>
       </main>
       <aside className="app-context-panel">

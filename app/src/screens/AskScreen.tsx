@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { engineCall, onArtifactCreated, onJobCompleted, onJobFailed, onQueryPhaseChanged } from "../lib/ipc";
 import type { Project, TaskType, ModelTier, OutputFormat } from "../types";
 
@@ -7,6 +8,12 @@ interface Props {
 }
 
 type QueryPhase = "idle" | "planning" | "retrieving" | "synthesizing" | "writing" | "done" | "error";
+
+const PHASE_ORDER: QueryPhase[] = ["planning", "retrieving", "synthesizing", "writing"];
+
+function stripFrontmatter(md: string): string {
+  return md.replace(/^---[\s\S]*?---\n?/, "");
+}
 
 export function AskScreen({ project }: Props) {
   const [prompt, setPrompt] = useState("");
@@ -20,6 +27,7 @@ export function AskScreen({ project }: Props) {
   const [artifactContent, setArtifactContent] = useState<string | null>(null);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [currentQueryRunId, setCurrentQueryRunId] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -85,7 +93,8 @@ export function AskScreen({ project }: Props) {
   }, [currentJobId, currentQueryRunId, project]);
 
   const handleGenerate = async () => {
-    if (!project || !prompt.trim()) return;
+    if (!project || !prompt.trim() || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setPhase("planning");
     setError(null);
     setArtifactContent(null);
@@ -107,6 +116,8 @@ export function AskScreen({ project }: Props) {
     } catch (e: unknown) {
       setPhase("error");
       setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
@@ -192,10 +203,10 @@ export function AskScreen({ project }: Props) {
 
             {isRunning && (
               <div className="phase-indicator">
-                {(["planning", "retrieving", "synthesizing", "writing"] as const).map((p) => (
+                {PHASE_ORDER.map((p) => (
                   <span key={p} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <span
-                      className={`phase-dot ${phase === p ? "active" : (["planning", "retrieving", "synthesizing", "writing"].indexOf(phase) > ["planning", "retrieving", "synthesizing", "writing"].indexOf(p) ? "done" : "")}`}
+                      className={`phase-dot ${phase === p ? "active" : (PHASE_ORDER.indexOf(phase as QueryPhase) > PHASE_ORDER.indexOf(p) ? "done" : "")}`}
                     />
                     <span style={{ fontSize: 11 }}>{p}</span>
                   </span>
@@ -223,8 +234,9 @@ export function AskScreen({ project }: Props) {
             <div
               className="artifact-preview card"
               style={{ background: "var(--color-surface)" }}
-              dangerouslySetInnerHTML={{ __html: markdownToHtmlSimple(artifactContent) }}
-            />
+            >
+              <ReactMarkdown>{stripFrontmatter(artifactContent)}</ReactMarkdown>
+            </div>
           </div>
         )}
 
@@ -242,25 +254,4 @@ export function AskScreen({ project }: Props) {
       </div>
     </div>
   );
-}
-
-/** Very simple markdown→HTML for preview. For production use react-markdown. */
-function markdownToHtmlSimple(md: string): string {
-  return md
-    .replace(/^---[\s\S]*?---\n?/, "") // strip frontmatter
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-    .replace(/^---$/gm, "<hr>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^(?!<[h|u|o|l|p|h])/gm, "")
-    .replace(/^([^<].+)$/gm, "<p>$1</p>");
 }

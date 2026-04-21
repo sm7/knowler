@@ -239,7 +239,7 @@ async def normalize_source(
             llm_resp = await llm.complete(
                 system_prompt="",
                 user_message=system_prompt,
-                tier=tier,  # type: ignore
+                tier=tier,
                 max_tokens=2000,
                 response_format="json",
             )

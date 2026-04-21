@@ -192,12 +192,12 @@ async def relation_expand(
         for eid in frontier:
             rows = await db.fetchall(
                 """
-                SELECT r.to_id, e.display_name, r.relation_type, r.confidence
+                SELECT r.to_id AS neighbor_id, e.display_name, r.relation_type, r.confidence
                 FROM relations r
                 JOIN entities e ON e.id = r.to_id
                 WHERE r.project_id=? AND r.from_id=? AND r.to_kind='entity'
                 UNION
-                SELECT r.from_id, e.display_name, r.relation_type, r.confidence
+                SELECT r.from_id AS neighbor_id, e.display_name, r.relation_type, r.confidence
                 FROM relations r
                 JOIN entities e ON e.id = r.from_id
                 WHERE r.project_id=? AND r.to_id=? AND r.from_kind='entity'
@@ -205,7 +205,7 @@ async def relation_expand(
                 (project_id, eid, project_id, eid),
             )
             for row in rows:
-                nid = row["to_id"] if row["to_id"] != eid else row["from_id"]
+                nid = row["neighbor_id"]
                 if nid not in visited:
                     visited.add(nid)
                     next_frontier.append(nid)
