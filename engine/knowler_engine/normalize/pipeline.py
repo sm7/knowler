@@ -26,6 +26,11 @@ from ulid import ULID
 
 from knowler_engine.jobs.types import JobContext
 from knowler_engine.llm.provider import LLMError, LLMProvider, parse_llm_json
+from knowler_engine.normalize.entity_resolver import (
+    add_alias_to_entity,
+    find_matching_entity,
+    resolve_project_entities,
+)
 from knowler_engine.storage.atomic import write_atomic
 from knowler_engine.text_heuristics import (
     choose_document_title,
@@ -271,27 +276,44 @@ async def normalize_source(
             normalized = _fallback_normalization(source_row, text)
             normalized["quality_flags"].append("normalization_failed")
 
-    # Persist entities
+    # Persist entities — use resolver to deduplicate before inserting
     for entity in normalized["entities"]:
-        entity_id = f"ent_{ULID()}"
-        canonical = entity["name"].lower().strip()
-        try:
-            await db.execute(
-                """
-                INSERT OR IGNORE INTO entities(
-                  id, project_id, entity_type, canonical_name, display_name,
-                  aliases_json, confidence, created_from_source_id
-                ) VALUES (?,?,?,?,?,?,?,?)
-                """,
-                (
-                    entity_id, project_id, entity["entity_type"],
-                    canonical, entity["name"],
-                    json.dumps(entity["aliases"]),
-                    entity["confidence"], source_id,
-                ),
+        existing_id = await find_matching_entity(
+            db,
+            project_id,
+            entity["name"],
+            entity["entity_type"],
+            entity["aliases"],
+        )
+        if existing_id:
+            # Entity already exists under a different surface form — absorb
+            await add_alias_to_entity(
+                db,
+                existing_id,
+                entity["name"],
+                entity["aliases"],
+                entity["confidence"],
             )
-        except Exception:
-            pass  # Unique constraint on (project_id, entity_type, canonical_name)
+        else:
+            entity_id = f"ent_{ULID()}"
+            canonical = entity["name"].lower().strip()
+            try:
+                await db.execute(
+                    """
+                    INSERT OR IGNORE INTO entities(
+                      id, project_id, entity_type, canonical_name, display_name,
+                      aliases_json, confidence, created_from_source_id
+                    ) VALUES (?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        entity_id, project_id, entity["entity_type"],
+                        canonical, entity["name"],
+                        json.dumps(entity["aliases"]),
+                        entity["confidence"], source_id,
+                    ),
+                )
+            except Exception:
+                pass  # Unique constraint fallback — shouldn't hit given find_matching_entity above
 
     await db.commit()
 
@@ -395,4 +417,24 @@ async def handle_normalize_source(ctx: JobContext) -> dict[str, Any]:
         tier=project.config.get("default_model_tier", "balanced"),
     )
     await ctx.log_event("info", "step_finished", f"Normalized: {len(result['entities'])} entities")
+
+    # Queue a batch entity resolution pass so newly inserted entities get
+    # deduplicated against the rest of the project graph.
+    if ctx.app_ctx.job_runner:
+        await ctx.app_ctx.job_runner.enqueue(
+            ctx.project_id, "resolve_entities", {}, requested_by="system"
+        )
+
     return result
+
+
+async def handle_resolve_entities(ctx: JobContext) -> dict[str, Any]:
+    """Job handler for the batch entity deduplication pass."""
+    project = await ctx.app_ctx.project_manager.get_project(ctx.project_id)
+    await ctx.log_event("info", "step_started", "Running entity resolution pass")
+    stats = await resolve_project_entities(db=project.db, project_id=ctx.project_id)
+    await ctx.log_event(
+        "info", "step_finished",
+        f"Entity resolution: {stats['merged']} merged in {stats['clusters']} clusters",
+    )
+    return stats
