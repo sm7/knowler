@@ -1,34 +1,58 @@
 /* Knowler — global styles
-   Design goal: calm Mac productivity app feel
-   Uses system fonts, muted palette, clean layout */
+   Design: modern, calm productivity app with depth and clarity */
 
 :root {
-  --color-bg: #fafafa;
-  --color-sidebar: #f0f0f0;
-  --color-sidebar-hover: #e4e4e4;
-  --color-sidebar-active: #dbe3f4;
-  --color-sidebar-active-text: #1a4fc4;
+  /* Backgrounds */
+  --color-bg: #f5f5f7;
+  --color-sidebar: #1c1c1e;
+  --color-sidebar-hover: rgba(255,255,255,0.08);
+  --color-sidebar-active: rgba(255,255,255,0.14);
+  --color-sidebar-active-text: #ffffff;
   --color-surface: #ffffff;
-  --color-border: #e0e0e0;
-  --color-border-subtle: #ebebeb;
-  --color-text: #1a1a1a;
-  --color-text-secondary: #5a5a5a;
-  --color-text-muted: #999;
+  --color-surface-raised: #ffffff;
+
+  /* Borders */
+  --color-border: #e2e2e7;
+  --color-border-subtle: #ededf0;
+
+  /* Text */
+  --color-text: #111111;
+  --color-text-secondary: #52525b;
+  --color-text-muted: #a0a0ab;
+
+  /* Brand & status */
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
+  --color-accent-light: #eff6ff;
   --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
   --color-warning: #d97706;
   --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+
+  /* Badges */
   --color-badge-bg: #eff6ff;
   --color-badge-text: #1d4ed8;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
 
-  --sidebar-width: 200px;
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --sidebar-width: 210px;
   --context-panel-width: 280px;
-  --font-mono: "SF Mono", "Fira Code", monospace;
+
+  /* Typography */
+  --font-mono: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
 }
 
 * {
@@ -44,141 +68,171 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography */
-h1 { font-size: 20px; font-weight: 600; }
-h2 { font-size: 16px; font-weight: 600; }
-h3 { font-size: 14px; font-weight: 600; }
+h1 { font-size: 18px; font-weight: 650; letter-spacing: -0.3px; }
+h2 { font-size: 15px; font-weight: 600; letter-spacing: -0.1px; }
+h3 { font-size: 13px; font-weight: 600; }
 
-/* Scrollbar — Mac-style thin */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); }
 
 /* Utilities */
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-/* Buttons */
+/* ── Buttons ── */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 6px 13px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 500;
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, color 0.12s;
   white-space: nowrap;
   user-select: none;
+  box-shadow: var(--shadow-xs);
+  outline: none;
 }
-.btn:hover { background: var(--color-sidebar-hover); }
-.btn:active { background: var(--color-border); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:hover {
+  background: var(--color-bg);
+  border-color: #c8c8cc;
+  color: var(--color-text);
+}
+.btn:active { background: var(--color-border-subtle); }
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+  border-color: var(--color-accent);
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
 .btn-primary {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: #fff;
+  box-shadow: 0 1px 3px rgba(37,99,235,0.30);
 }
-.btn-primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37,99,235,0.35);
+}
+.btn-primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.35);
+}
 
 .btn-danger {
   color: var(--color-danger);
   border-color: #fca5a5;
 }
-.btn-danger:hover { background: #fef2f2; }
+.btn-danger:hover { background: var(--color-danger-bg); }
 
 .btn-ghost {
   border-color: transparent;
   background: transparent;
+  box-shadow: none;
 }
-.btn-ghost:hover { background: var(--color-sidebar-hover); }
+.btn-ghost:hover { background: var(--color-bg); box-shadow: none; }
 
-/* Badges */
+/* ── Badges ── */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 500;
   background: var(--color-badge-bg);
   color: var(--color-badge-text);
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
+.badge-blue  { background: #dbeafe; color: #1e40af; }
 .badge-green { background: #dcfce7; color: #15803d; }
-.badge-red { background: #fee2e2; color: #b91c1c; }
-.badge-yellow { background: #fef9c3; color: #a16207; }
-.badge-gray { background: #f3f4f6; color: #374151; }
+.badge-red   { background: #fee2e2; color: #b91c1c; }
+.badge-yellow{ background: #fef9c3; color: #92400e; }
+.badge-gray  { background: #f3f4f6; color: #374151; }
 
-/* Forms */
+/* ── Forms ── */
 input[type="text"],
 input[type="url"],
 input[type="password"],
 textarea,
 select {
   width: 100%;
-  padding: 7px 10px;
+  padding: 7px 11px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 13px;
+  font-family: var(--font-sans);
   color: var(--color-text);
   background: var(--color-surface);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-xs);
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
 }
 textarea { resize: vertical; font-family: inherit; }
 
-/* Cards */
+/* ── Cards ── */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
-/* Empty state */
+/* ── Empty state ── */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 24px;
+  gap: 10px;
+  padding: 56px 24px;
   text-align: center;
   color: var(--color-text-secondary);
 }
-.empty-state h3 { color: var(--color-text); }
-.empty-state p { font-size: 13px; max-width: 320px; line-height: 1.5; }
+.empty-state h3 { color: var(--color-text); font-size: 15px; }
+.empty-state p { font-size: 13px; max-width: 320px; line-height: 1.6; }
 
-/* Progress bar */
+/* ── Progress bar ── */
 .progress-bar {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-border);
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-subtle);
   overflow: hidden;
 }
 .progress-bar-fill {
   height: 100%;
-  background: var(--color-accent);
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, var(--color-accent), #60a5fa);
+  transition: width 0.35s ease;
+  border-radius: var(--radius-full);
 }
 
-/* Divider */
+/* ── Divider ── */
 .divider {
   height: 1px;
   background: var(--color-border);

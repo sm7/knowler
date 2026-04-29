@@ -40,6 +40,13 @@ export function ProjectsScreen({ onProjectOpen, onProjectDelete, activeProject }
     void loadProjects();
   }, []);
 
+  // Use a ref so job event callbacks always see the latest createdProject
+  // without needing to re-register listeners on every state change.
+  const createdProjectRef = useRef<Project | null>(null);
+  useEffect(() => {
+    createdProjectRef.current = createdProject;
+  }, [createdProject]);
+
   // Listen for job progress while importing
   useEffect(() => {
     if (step !== "importing") return;
@@ -53,13 +60,14 @@ export function ProjectsScreen({ onProjectOpen, onProjectDelete, activeProject }
       if (e.status === "succeeded") {
         setProgress({ message: "Done!", pct: 100 });
         setTimeout(() => {
-          if (createdProject) {
+          const proj = createdProjectRef.current;
+          if (proj) {
             setProjects((prev) =>
-              prev.find((p) => p.project_id === createdProject.project_id)
+              prev.find((p) => p.project_id === proj.project_id)
                 ? prev
-                : [createdProject, ...prev]
+                : [proj, ...prev]
             );
-            onProjectOpen(createdProject);
+            onProjectOpen(proj);
             navigate("/inbox");
           }
           setStep("list");
@@ -70,7 +78,7 @@ export function ProjectsScreen({ onProjectOpen, onProjectDelete, activeProject }
     }).then((fn) => unsubs.push(fn));
 
     return () => unsubs.forEach((fn) => fn());
-  }, [step, createdProject]);
+  }, [step]);
 
   const handleChooseFolder = async () => {
     const selectedPath = await pickDirectory(
@@ -104,6 +112,7 @@ export function ProjectsScreen({ onProjectOpen, onProjectDelete, activeProject }
       setProgress({ message: `Importing ${r.files_found} files…`, pct: 5 });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
+      setProgress(null);
       setStep("creating");
     }
   };

@@ -17,11 +17,13 @@ const FINDING_SECTIONS: { type: FindingType; label: string; icon: string }[] = [
 export function HealthScreen({ project }: Props) {
   const [findings, setFindings] = useState<MaintenanceFinding[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
 
   const load = async () => {
     if (!project) return;
     setLoading(true);
+    setLoadError(null);
     try {
       const r = await engineCall<{ findings: MaintenanceFinding[] }>(
         "maintenance.listFindings",
@@ -29,7 +31,7 @@ export function HealthScreen({ project }: Props) {
       );
       setFindings(r.findings ?? []);
     } catch (e) {
-      console.error(e);
+      setLoadError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
@@ -86,6 +88,11 @@ export function HealthScreen({ project }: Props) {
       </div>
 
       <div className="screen-body">
+        {loadError && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "var(--radius-sm)", padding: "10px 14px", marginBottom: 16, color: "var(--color-danger)", fontSize: 13 }}>
+            Failed to load findings: {loadError}
+          </div>
+        )}
         {findings.length === 0 && !loading ? (
           <div className="empty-state">
             <span style={{ fontSize: 36 }}>♥</span>

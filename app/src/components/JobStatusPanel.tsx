@@ -69,8 +69,9 @@ export function JobStatusPanel({ project }: Props) {
     return () => listeners.forEach((fn) => fn());
   }, []);
 
-  // Load jobs when project changes
+  // Clear logs and reload jobs when project changes
   useEffect(() => {
+    setLogs([]);
     if (!project) return;
     setLoading(true);
     engineCall<{ jobs: Job[] }>("jobs.list", { project_id: project.project_id })

@@ -80,7 +80,7 @@ class AppContext:
         self,
         global_db: any,
         project_manager: ProjectManager,
-        job_runner: JobRunner,
+        job_runner: JobRunner | None,
         llm: LLMProvider,
         router: Router,
     ) -> None:
@@ -841,7 +841,7 @@ async def run(dev: bool, workspace: pathlib.Path) -> None:
     ctx = AppContext(
         global_db=global_db,
         project_manager=pm,
-        job_runner=None,  # type: ignore
+        job_runner=None,
         llm=llm,
         router=router,
     )

@@ -39,16 +39,17 @@ export function Sidebar({ activeProject, projectSelectionReady }: Props) {
         {NAV_ITEMS.map(({ path, label, icon, requiresProject }) => (
           <li key={path}>
             {requiresProject && !projectActionsEnabled ? (
-              <span
+              <button
                 className="sidebar-nav-item disabled"
-                aria-disabled="true"
+                disabled
                 title="Select a project first"
+                aria-label={`${label} — select a project first`}
               >
                 <span className="sidebar-nav-icon" aria-hidden="true">
                   {icon}
                 </span>
                 {label}
-              </span>
+              </button>
             ) : (
               <NavLink
                 to={path}

@@ -206,7 +206,7 @@ async def compile_source_summary(
         llm_resp = await llm.complete(
             system_prompt="",
             user_message=prompt,
-            tier=tier,  # type: ignore
+            tier=tier,
             max_tokens=1200,
             response_format="text",
         )
@@ -582,7 +582,7 @@ async def compile_concept_page(
         llm_resp = await llm.complete(
             system_prompt="",
             user_message=prompt,
-            tier=tier,  # type: ignore
+            tier=tier,
             max_tokens=1500,
             response_format="text",
         )
@@ -656,6 +656,16 @@ async def _index_page_content(
     source_id: str | None = None,
 ) -> None:
     """Add or update a content_unit and FTS entry for a page."""
+    # Remove stale FTS entries before deleting content_units (rowid link would become dangling)
+    await db.execute(
+        """
+        DELETE FROM content_units_fts WHERE rowid IN (
+            SELECT rowid FROM content_units
+            WHERE project_id=? AND parent_kind='page' AND parent_id=?
+        )
+        """,
+        (project_id, page_id),
+    )
     # Remove existing units for this page
     await db.execute(
         "DELETE FROM content_units WHERE project_id=? AND parent_kind='page' AND parent_id=?",

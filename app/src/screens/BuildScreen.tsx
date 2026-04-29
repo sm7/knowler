@@ -96,9 +96,11 @@ export function BuildScreen({ project }: Props) {
       } catch (error) {
         console.error(error);
       }
-      window.setTimeout(() => {
-        void tick();
-      }, 1200);
+      if (!cancelled) {
+        window.setTimeout(() => {
+          void tick();
+        }, 1200);
+      }
     };
     void tick();
     return () => {

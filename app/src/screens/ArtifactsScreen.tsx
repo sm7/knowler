@@ -17,6 +17,12 @@ interface Props {
   project: Project | null;
 }
 
+const PAGE_TYPE_LABELS: Record<string, string> = {
+  source_summary: "Source Summary",
+  concept: "Concept",
+  question: "Question",
+};
+
 export function ArtifactsScreen({ project }: Props) {
   const [pages, setPages] = useState<Page[]>([]);
   const [selected, setSelected] = useState<Page | null>(null);
@@ -91,7 +97,7 @@ export function ArtifactsScreen({ project }: Props) {
               style={{ fontSize: 12, padding: "4px 10px" }}
               onClick={() => setFilter(f)}
             >
-              {f === "all" ? "All" : f === "source_summary" ? "Sources" : f === "concept" ? "Concepts" : "Questions"}
+              {f === "all" ? "All" : f === "source_summary" ? "Sources" : (PAGE_TYPE_LABELS[f] ?? f) + "s"}
             </button>
           ))}
         </div>
@@ -123,13 +129,7 @@ export function ArtifactsScreen({ project }: Props) {
                       {page.title}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--color-text-muted)", marginTop: 2 }}>
-                      {page.page_type === "source_summary"
-                        ? "Source Summary"
-                        : page.page_type === "concept"
-                        ? "Concept"
-                        : page.page_type === "question"
-                        ? "Question"
-                        : page.page_type} · {new Date(page.created_at).toLocaleDateString()}
+                      {PAGE_TYPE_LABELS[page.page_type] ?? page.page_type} · {new Date(page.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
@@ -153,13 +153,7 @@ export function ArtifactsScreen({ project }: Props) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{selected.title}</div>
                   <div style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
-                    {selected.page_type === "source_summary"
-                      ? "Source Summary"
-                      : selected.page_type === "concept"
-                      ? "Concept"
-                      : selected.page_type === "question"
-                      ? "Question"
-                      : selected.page_type} · {selected.file_path}
+                    {PAGE_TYPE_LABELS[selected.page_type] ?? selected.page_type} · {selected.file_path}
                   </div>
                 </div>
                 <button

@@ -554,7 +554,7 @@ async def synthesize_artifact(
     resp = await llm.complete(
         system_prompt="",
         user_message=synthesis_prompt,
-        tier=tier,  # type: ignore
+        tier=tier,
         max_tokens=2000,
         response_format="text",
     )

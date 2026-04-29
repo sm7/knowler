@@ -36,6 +36,7 @@ export function SettingsScreen() {
   const [apiKeyMasked, setApiKeyMasked] = useState(true);
   const [keyStatus, setKeyStatus] = useState<ApiKeyStatus | null>(null);
   const [settingsReady, setSettingsReady] = useState(false);
+  const [keyStatusError, setKeyStatusError] = useState(false);
   const [privacyMode, setPrivacyMode] = useState<PrivacyMode>("local_first");
   const [obsidianPath, setObsidianPath] = useState("");
   const [defaultTier, setDefaultTier] = useState<ModelTier>("balanced");
@@ -70,6 +71,7 @@ export function SettingsScreen() {
 
     let cancelled = false;
     setKeyStatus(null);
+    setKeyStatusError(false);
 
     getApiKeyStatus("Knowler", provider)
       .then((status) => {
@@ -79,11 +81,7 @@ export function SettingsScreen() {
       })
       .catch(() => {
         if (!cancelled) {
-          setKeyStatus({
-            configured: false,
-            provider,
-            storage: "none",
-          });
+          setKeyStatusError(true);
         }
       });
 
@@ -135,7 +133,7 @@ export function SettingsScreen() {
               ✓ API key saved — AI features are active
             </div>
           )}
-          {keyStatus?.configured === false && (
+          {keyStatus?.configured === false && !keyStatusError && (
             <div style={{
               marginBottom: 16,
               padding: "10px 14px",
@@ -147,6 +145,20 @@ export function SettingsScreen() {
               fontWeight: 500,
             }}>
               ⚠ No API key saved — required for AI features (normalize, compile, query)
+            </div>
+          )}
+          {keyStatusError && (
+            <div style={{
+              marginBottom: 16,
+              padding: "10px 14px",
+              borderRadius: "var(--radius-sm)",
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
+              color: "var(--color-danger)",
+              fontSize: 13,
+              fontWeight: 500,
+            }}>
+              ⚠ Could not check API key status — engine may be unavailable
             </div>
           )}
 
