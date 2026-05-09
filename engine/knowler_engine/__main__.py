@@ -802,7 +802,7 @@ def _register_job_handlers(job_runner: JobRunner) -> None:
         handle_ingest_files,
         handle_ingest_urls,
     )
-    from knowler_engine.normalize.pipeline import handle_normalize_source
+    from knowler_engine.normalize.pipeline import handle_normalize_source, handle_resolve_entities
     from knowler_engine.compile.pipeline import handle_compile_project
     from knowler_engine.query.engine import handle_query
     from knowler_engine.maintenance.engine import handle_run_maintenance
@@ -811,6 +811,7 @@ def _register_job_handlers(job_runner: JobRunner) -> None:
     job_runner.register("ingest_urls", handle_ingest_urls)
     job_runner.register("ingest_files", handle_ingest_files)
     job_runner.register("normalize_source", handle_normalize_source)
+    job_runner.register("resolve_entities", handle_resolve_entities)
     job_runner.register("compile_project", handle_compile_project)
     job_runner.register("query", handle_query)
     job_runner.register("run_maintenance", handle_run_maintenance)
